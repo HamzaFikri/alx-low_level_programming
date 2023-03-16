@@ -1,13 +1,12 @@
 #include <stdio.h>
 
 /**
- * main - the main function
+ * main - entry point of any C program
  *
- * Return : specify a value to be returned always 0
+ * Return:  specify a value to be returned
  */
-
 int main(void)
 {
 	printf("with proper grammar, but the outcome is a piece of art,\n");
-	return(0);
+	return (0);
 }
