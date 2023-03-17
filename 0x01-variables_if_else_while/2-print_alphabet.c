@@ -1,18 +1,19 @@
 #include <stdio.h>
-
 /**
- * main - Entry point for Alphabet
+ * main - Entry point
  *
- * Return: ALways 0 (Success)
+ * Return: Always 0
  */
-
 int main(void)
 {
-char letter = 'a';
-do {
-	putchar(letter);
-	letter++;
-} while (letter <= 'z');
-	putchar("\n");
+	char letter;
+
+	letter = 'a';
+	while (letter != '{')
+	{
+		putchar (letter);
+		letter++;
+	}
+	putchar('\n');
 	return (0);
 }
