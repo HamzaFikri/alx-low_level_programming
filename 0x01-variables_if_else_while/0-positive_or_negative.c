@@ -2,8 +2,8 @@
 #include <time.h>
 /* more headers goes there */
 #include <stdio.h>
-/* betty style doc for function main goes there
- * main - Entry point
+/* betty style doc for function main goes there*/
+/* main - Entry point
  *
  * Description: prints a random number and evaluates if it positive negative
  * or zero
