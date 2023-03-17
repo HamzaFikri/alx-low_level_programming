@@ -8,18 +8,14 @@
 
 int main(void)
 {
-char i;
-for (i = 0; i < 16; i++)
+char str;
+for (i = 0; i <= 9; i++)
 {
-	if (i < 10)
-{
-	{
 putchar(i + '0');
 }
-else
+for (i = 'a'; i <= 'f'; i++)
 {
-putchar(i - 10 + 'a');
-}
+putchar(i + 'a');
 }
 putchar('\n');
 return (0);
