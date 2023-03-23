@@ -2,7 +2,6 @@
 
 /**
  * print_triangle - Prints a triangle of square according parameter
- *
  * @size: sets the size of the triangle
  *
  * Return: nothing
@@ -10,13 +9,13 @@
 
 void print_triangle(int size)
 {
-	int x, y;
+	int i, j;
 
 	if (size > 0)
-		for (x = size; x > 0; x--)
+		for (i = size; i > 0; i--)
 		{
-			for (y = 1; y <= size; y++)
-				if (y >= i)
+			for (j = 1; j <= size; j++)
+				if (j >= i)
 					_putchar('#');
 				else
 					_putchar(' ');
