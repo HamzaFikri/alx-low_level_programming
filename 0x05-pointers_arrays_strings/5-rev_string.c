@@ -18,7 +18,7 @@
 		{
 			count;
 			rv = s[i];
-			s[i] = s[fcounter];
+			s[i] = s[fcount];
 			s[count] = rv;
 		}
 	}
