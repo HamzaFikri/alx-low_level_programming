@@ -4,17 +4,23 @@
  * _strchr - locates a character string
  *@s: points to a character
  *@c: character
- * Return: null
+ * Return: nulil
  */
 char *_strchr(char *s, char c)
 {
-	int i;
+	int i, j = 0;
 
-	for (i = 0; s[i] >= '\0'; i++)
+	while (s[j] != '\0')
+	{
+		j++;
+	}
+	for (i = 0; i <= j; i++)
 	{
 		if (s[i] == c)
-			return (s + i);
+		{
+			s = s + i;
+			return (s);
+		}
 	}
-
-	return (NULL);
+	return ('\0');
 }
