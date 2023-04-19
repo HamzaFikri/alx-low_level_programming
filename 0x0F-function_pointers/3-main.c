@@ -10,7 +10,7 @@
  */
 int main(int argc, char *argv[])
 {
-	int one, two, ans;
+	int num1, num2, operat;
 	int (*res)(int, int);
 	char *get_op;
 
@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 		exit(98);
 	}
 
-	one = atoi(argv[1]);
-	two = atoi(argv[3]);
+	num1 = atoi(argv[1]);
+	num2 = atoi(argv[3]);
 	get_op = argv[2];
 
 	if (get_op_func(argv[2]) == NULL || argv[2][1] != '\0')
@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
 	}
 
 	res = get_op_func(get_op);
-	ans = res(one, two);
+	operat = res(num1, num2);
 
-	printf("%d\n", ans);
+	printf("%d\n", operat);
 	return (0);
 }
