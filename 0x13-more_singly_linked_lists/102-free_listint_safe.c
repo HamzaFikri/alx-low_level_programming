@@ -3,26 +3,37 @@
 /**
  * free_listint_safe - frees linked list safe version
  * @h: input head of linked list
- * Return: size of list that was freed
+ * Return: size of list that was ffreed
  */
 size_t free_listint_safe(listint_t **h)
 {
-	listint_t *current, *hold;
-	size_t count;
+	listint_t *current, *runner, *head;
+	size_t h_i, r_i;
 
-	count = 0;
+	if (h == NULL || *h == NULL)
+		return (0);
+
 	current = *h;
-	while (current != NULL)
-	{
-		count++;
-		hold = current;
-		current = current->next;
-		free(hold);
+	head = *h;
+	h_i = 0;
 
-		if (hold < current)
-			break;
+	while (head != NULL)
+	{
+		runner = *h;
+		for (r_i = 0; r_i < h_i; r_i++)
+		{
+			if (runner == current)
+			{
+				*h = NULL;
+				return (h_i);
+			}
+			runner = runner->next;
+		}
+		current = head->next;
+		free(head);
+		head = current;
+		h_i++;
 	}
 	*h = NULL;
-
-	return (count);
+	return (h_i);
 }
