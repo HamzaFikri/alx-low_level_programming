@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <elf.h>
 #define BUFSIZE 1204
 
 int _putchar(char c);
