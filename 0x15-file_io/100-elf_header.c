@@ -1,240 +1,174 @@
 #include "main.h"
+#include <string.h>
 
-/**
- * print_addr - prints address
- * @ptr: magic.
- * Return: no return.
- */
-void print_addr(char *ptr)
+void mannage_error(char *msg, int code);
+void isElfFile(unsigned char *e_ident);
+void mannage_magic(Elf64_Ehdr *header);
+void mannage_class(Elf64_Ehdr *header);
+void mannage_data(Elf64_Ehdr *header);
+void mannage_version(Elf64_Ehdr *header);
+void mannage_os_abi(Elf64_Ehdr *header);
+void mannage_type(Elf64_Ehdr *header);
+
+typedef struct header_types
 {
-	int i;
-	int begin;
-	char sys;
+	int type;
+	char *msg;
+} Hdr_t;
 
-	printf("  Entry point address:               0x");
+void struct_iterator(Hdr_t *h_t, int size, Elf64_Ehdr *header, char *title, int flag);
+void type_iterator(Hdr_t *h_t, int size, Elf64_Ehdr *header, char *title);
 
-	sys = ptr[4] + '0';
-	if (sys == '1')
-	{
-		begin = 26;
-		printf("80");
-		for (i = begin; i >= 22; i--)
-		{
-			if (ptr[i] > 0)
-				printf("%x", ptr[i]);
-			else if (ptr[i] < 0)
-				printf("%x", 256 + ptr[i]);
-		}
-		if (ptr[7] == 6)
-			printf("00");
-	}
-
-	if (sys == '2')
-	{
-		begin = 26;
-		for (i = begin; i > 23; i--)
-		{
-			if (ptr[i] >= 0)
-				printf("%02x", ptr[i]);
-
-			else if (ptr[i] < 0)
-				printf("%02x", 256 + ptr[i]);
-
-		}
-	}
-	printf("\n");
-}
-
-/**
- * print_type - prints type
- * @ptr: magic.
- * Return: no return.
- */
-void print_type(char *ptr)
-{
-	char type = ptr[16];
-
-	if (ptr[5] == 1)
-		type = ptr[16];
-	else
-		type = ptr[17];
-
-	printf("  Type:                              ");
-	if (type == 0)
-		printf("NONE (No file type)\n");
-	else if (type == 1)
-		printf("REL (Relocatable file)\n");
-	else if (type == 2)
-		printf("EXEC (Executable file)\n");
-	else if (type == 3)
-		printf("DYN (Shared object file)\n");
-	else if (type == 4)
-		printf("CORE (Core file)\n");
-	else
-		printf("<unknown: %x>\n", type);
-}
-
-/**
- * print_osabi - prints osabi
- * @ptr: magic.
- * Return: no return.
- */
-void print_osabi(char *ptr)
-{
-	char osabi = ptr[7];
-
-	printf("  OS/ABI:                            ");
-	if (osabi == 0)
-		printf("UNIX - System V\n");
-	else if (osabi == 2)
-		printf("UNIX - NetBSD\n");
-	else if (osabi == 6)
-		printf("UNIX - Solaris\n");
-	else
-		printf("<unknown: %x>\n", osabi);
-
-	printf("  ABI Version:                       %d\n", ptr[8]);
-}
-
-
-/**
- * print_version - prints version
- * @ptr: magic.
- * Return: no return.
- */
-void print_version(char *ptr)
-{
-	int version = ptr[6];
-
-	printf("  Version:                           %d", version);
-
-	if (version == EV_CURRENT)
-		printf(" (current)");
-
-	printf("\n");
-}
-/**
- * print_data - prints data
- * @ptr: magic.
- * Return: no return.
- */
-void print_data(char *ptr)
-{
-	char data = ptr[5];
-
-	printf("  Data:                              2's complement");
-	if (data == 1)
-		printf(", little endian\n");
-
-	if (data == 2)
-		printf(", big endian\n");
-}
-/**
- * print_magic - prints magic info.
- * @ptr: magic.
- * Return: no return.
- */
-void print_magic(char *ptr)
-{
-	int bytes;
-
-	printf("  Magic:  ");
-
-	for (bytes = 0; bytes < 16; bytes++)
-		printf(" %02x", ptr[bytes]);
-
-	printf("\n");
-
-}
-
-/**
- * check_sys - check the version system.
- * @ptr: magic.
- * Return: no return.
- */
-void check_sys(char *ptr)
-{
-	char sys = ptr[4] + '0';
-
-	if (sys == '0')
-		exit(98);
-
-	printf("ELF Header:\n");
-	print_magic(ptr);
-
-	if (sys == '1')
-		printf("  Class:                             ELF32\n");
-
-	if (sys == '2')
-		printf("  Class:                             ELF64\n");
-
-	print_data(ptr);
-	print_version(ptr);
-	print_osabi(ptr);
-	print_type(ptr);
-	print_addr(ptr);
-}
-
-/**
- * check_elf - check if it is an elf file.
- * @ptr: magic.
- * Return: 1 if it is an elf file. 0 if not.
- */
-int check_elf(char *ptr)
-{
-	int addr = (int)ptr[0];
-	char E = ptr[1];
-	char L = ptr[2];
-	char F = ptr[3];
-
-	if (addr == 127 && E == 'E' && L == 'L' && F == 'F')
-		return (1);
-
-	return (0);
-}
-
-/**
- * main - check the code for Holberton School students.
- * @argc: number of arguments.
- * @argv: arguments vector.
- * Return: Always 0.
- */
 int main(int argc, char *argv[])
 {
-	int fd, ret_read;
-	char ptr[27];
+	int fd, numRead;
+	Elf64_Ehdr *efl_h;
 
 	if (argc != 2)
+		mannage_error("Usage: elf-header <ELF-file>\n", 97);
+
+	fd = open(argv[1], O_RDONLY | O_SYNC);
+	if (fd == -1)
+		dprintf(STDERR_FILENO, "Cant Open File %s\n", argv[1]), exit(98);
+
+	efl_h = malloc(sizeof(Elf64_Ehdr));
+	if (efl_h == NULL)
+		mannage_error("Cant use malloc\n", 100);
+
+	numRead = read(fd, efl_h, sizeof(efl_h));
+	if (numRead == -1)
 	{
-		dprintf(STDERR_FILENO, "Usage: elf_header elf_filename\n");
-		exit(98);
+		free(efl_h);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		exit(99);
 	}
 
-	fd = open(argv[1], O_RDONLY);
+	isElfFile(efl_h->e_ident);
+	mannage_magic(efl_h);
+	mannage_class(efl_h);
+	mannage_data(efl_h);
+	mannage_version(efl_h);
+	mannage_os_abi(efl_h);
+	mannage_type(efl_h);
+	printf("  Entry point address:\t\t    0x%06lx\n", efl_h->e_entry);
+	return (1);
+}
 
-	if (fd < 0)
+void isElfFile(unsigned char *e_ident)
+{
+	if (!strncmp((char *) e_ident, "\177ELF", 4))
+		dprintf(STDOUT_FILENO, "ELF Header:\n");
+	else
+		mannage_error("Error: ELF mismatch \n", 98);
+}
+
+void mannage_magic(Elf64_Ehdr *header)
+{
+	int i = 0;
+
+	dprintf(STDOUT_FILENO, "  Magic:   ");
+	for (; i < (EI_NIDENT - 1); i++)
+		dprintf(STDOUT_FILENO, "%02x ", header->e_ident[i]);
+	dprintf(STDOUT_FILENO, "%02x\n", header->e_ident[i]);
+}
+
+void mannage_class(Elf64_Ehdr *header)
+{
+	Hdr_t h_types[] = {
+		{ELFCLASS32, "ELF32\n"},
+		{ELFCLASS64, "ELF64\n"},
+		{ELFCLASSNONE, "Invalid Class\n"}
+	};
+	struct_iterator(h_types, 3, header, "  Class:\t\t\t    ", EI_CLASS);
+}
+
+void mannage_data(Elf64_Ehdr *header)
+{
+	Hdr_t h_types[] = {
+		{ELFDATA2LSB, "2's complement, little endian\n"},
+		{ELFDATA2MSB, "2's complement, big endian\n"},
+		{ELFDATANONE, "Invalid data encoding\n"}
+	};
+	struct_iterator(h_types, 3, header, "  Data:\t\t\t\t    ", EI_DATA);
+}
+
+void mannage_version(Elf64_Ehdr *header)
+{
+	Hdr_t h_types[] = {
+		{EV_CURRENT, "1 (current)\n"},
+		{EV_NONE, "0 (invalid\n"}
+	};
+	struct_iterator(h_types, 2, header, "  Version:\t\t\t    ", EI_VERSION);
+}
+
+void mannage_os_abi(Elf64_Ehdr *header)
+{
+
+	Hdr_t h_types[] = {
+		{ELFOSABI_HPUX, "Hewlett-Packard HP-UX\n"},
+		{ELFOSABI_NETBSD, "NetBSD\n"},
+		{ELFOSABI_SOLARIS, "Sun Solaris\n"},
+		{ELFOSABI_AIX, "AIX\n"},
+		{ELFOSABI_FREEBSD, "FreeBSD\n"},
+		{ELFOSABI_TRU64, "Compaq TRU64 UNIX\n"},
+		{ELFOSABI_MODESTO, "Novell Modesto\n"},
+		{ELFOSABI_OPENBSD, "Open BSD\n"},
+		{ELFOSABI_SYSV, "UNIX - System V\n"}
+	};
+	struct_iterator(h_types, 9, header, "  OS/ABI:\t\t\t    ", EI_OSABI);
+	dprintf(STDOUT_FILENO, "  ABI Version:\t\t\t    ");
+	printf("%i\n", header->e_ident[EI_ABIVERSION]);
+}
+
+void mannage_type(Elf64_Ehdr *header)
+{
+	Hdr_t h_types[] = {
+		{ET_NONE, "No file type\n"},
+		{ET_REL, "Relocatable file\n"},
+		{ET_EXEC, "Executable file\n"},
+		{ET_DYN, "Shared object file\n"},
+		{ET_CORE, "Core file\n"},
+		{ET_LOOS, "Operating system-specific\n"},
+		{ET_HIOS, "Operating system-specific\n"},
+		{ET_LOPROC, "Processor-specific\n"},
+		{ET_HIPROC, "Processor-specific\n"},
+	};
+	type_iterator(h_types, 8, header, "  Type:\t\t\t\t    ");
+}
+
+void struct_iterator(Hdr_t *h_t, int size, Elf64_Ehdr *header, char *title, int flag)
+{
+	int i = 0;
+
+	while (i < size)
 	{
-		dprintf(STDERR_FILENO, "Err: file can not be open\n");
-		exit(98);
+		if (header->e_ident[flag] == h_t[i].type)
+		{
+			dprintf(STDOUT_FILENO, "%s", title);
+			printf("%s", h_t[i].msg);
+		}
+		i++;
 	}
+}
 
-	lseek(fd, 0, SEEK_SET);
-	ret_read = read(fd, ptr, 27);
+void type_iterator(Hdr_t *h_t, int size, Elf64_Ehdr *header, char *title)
+{
+	int i = 0;
 
-	if (ret_read == -1)
+	while (i < size)
 	{
-		dprintf(STDERR_FILENO, "Err: The file can not be read\n");
-		exit(98);
+		if (header->e_type == h_t[i].type)
+		{
+			dprintf(STDOUT_FILENO, "%s", title);
+			printf("%s", h_t[i].msg);
+		}
+		i++;
 	}
+}
 
-	if (!check_elf(ptr))
-	{
-		dprintf(STDERR_FILENO, "Err: It is not an ELF\n");
-		exit(98);
-	}
 
-	check_sys(ptr);
-	close(fd);
-
-	return (0);
+void mannage_error(char *msg, int code)
+{
+	dprintf(STDERR_FILENO, "%s", msg);
+	exit(code);
 }
