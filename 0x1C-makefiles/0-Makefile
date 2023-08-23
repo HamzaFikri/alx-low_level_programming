@@ -1,0 +1,4 @@
+# 0. make -f 0-Makefile
+
+all: school.c main.c
+	gcc -Wall -Werror -Wextra -pedantic school.c main.c -o school
